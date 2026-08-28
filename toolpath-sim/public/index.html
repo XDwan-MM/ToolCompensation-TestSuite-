@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>刀补路径模拟程序</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <div id="workspace">
+    <aside id="sidebar">
+      <div id="sidebar-toggle">☰</div>
+      <div id="sidebar-content">
+        <!-- File Loader -->
+        <section class="panel" id="panel-file">
+          <h3 class="panel-title">📁 文件加载</h3>
+          <select id="file-select"></select>
+          <div class="upload-zone" id="upload-zone">拖拽或点击上传 NC 文件</div>
+          <input type="file" id="file-input" accept=".nc" hidden>
+        </section>
+
+        <!-- Tool Parameters -->
+        <section class="panel" id="panel-params">
+          <h3 class="panel-title">⚙️ 刀补参数</h3>
+          <div class="param-row">
+            <label>D 值: <span id="d-value">6.000</span></label>
+            <input type="range" id="d-slider" min="-30" max="30" step="0.5" value="6">
+            <input type="number" id="d-input" min="-30" max="30" step="0.001" value="6.000">
+            <span class="param-hint">mm，可输入小半径(精度0.001)及负值</span>
+          </div>
+          <div class="param-row">
+            <label>干涉检查模式 (CNV):</label>
+            <select id="cnv-select">
+              <option value="0">FullCheck - 直线+圆弧检查</option>
+              <option value="1">ArcOnly - 仅圆弧角度检查</option>
+              <option value="2">Disabled - 不做干涉检查</option>
+            </select>
+          </div>
+          <div class="param-row">
+            <label>干涉检查动作 (CAV):</label>
+            <select id="cav-select">
+              <option value="0">Alarm - 报警停止</option>
+              <option value="1">Avoid - 避开过切</option>
+            </select>
+          </div>
+          <div class="param-row">
+            <label>二次干涉处理 (NAA):</label>
+            <select id="naa-select">
+              <option value="0">Alarm - 报警停止</option>
+              <option value="1">Continue - 继续加工</option>
+            </select>
+          </div>
+          <div class="param-row">
+            <label>起刀类型低位 (SUP):</label>
+            <select id="sup-select">
+              <option value="0">0 - TypeA</option>
+              <option value="1">1 - TypeB (过渡到ABC)</option>
+            </select>
+          </div>
+          <div class="param-row">
+            <label>起刀类型高位 (SUV):</label>
+            <select id="suv-select">
+              <option value="0">0 - 标准 A/B</option>
+              <option value="1">1 - TypeC</option>
+            </select>
+          </div>
+          <div class="param-row">
+            <label>外边拐角 (CCC):</label>
+            <select id="ccc-select">
+              <option value="0">0 - 直线连接</option>
+              <option value="1">1 - 圆弧连接</option>
+            </select>
+          </div>
+          <div class="param-row">
+            <label>预读段数 (lookAheadSegments):</label>
+            <select id="la-select">
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8" selected>8</option>
+            </select>
+          </div>
+        </section>
+
+        <!-- Segment List -->
+        <section class="panel" id="panel-segments">
+          <h3 class="panel-title">📋 段列表</h3>
+          <div id="segment-list"></div>
+        </section>
+
+        <!-- Path Info -->
+        <section class="panel" id="panel-info">
+          <h3 class="panel-title">ℹ️ 路径信息</h3>
+          <div id="info-content">
+            <div>当前坐标: <span id="info-coords">-</span></div>
+            <div>段类型: <span id="info-interp">-</span></div>
+            <div>段长度: <span id="info-length">-</span></div>
+            <div>总段数: <span id="info-total">0</span></div>
+          </div>
+        </section>
+
+        <!-- Errors -->
+        <section class="panel" id="panel-errors">
+          <h3 class="panel-title">⚠️ 错误信息</h3>
+          <div id="error-content">
+            <div>状态: <span id="error-status">等待计算</span></div>
+            <div id="error-list"></div>
+          </div>
+        </section>
+
+        <!-- View Controls -->
+        <section class="panel" id="panel-view">
+          <h3 class="panel-title">👁️ 视图控制</h3>
+          <label><input type="checkbox" id="chk-raw" checked> RAW 路径</label>
+          <label><input type="checkbox" id="chk-cmp" checked> CMP 路径</label>
+          <label><input type="checkbox" id="chk-labels" checked> 坐标标注</label>
+          <label><input type="checkbox" id="chk-grid" checked> 网格</label>
+          <label><input type="checkbox" id="chk-tool"> 刀具显示</label>
+          <label><input type="checkbox" id="chk-vectors" checked> 补偿矢量</label>
+          <div style="margin-top:6px;font-size:11px;color:#6c7086;">
+            <span style="color:#e6a817;">●</span> fromAvoid (黄) &nbsp;
+            <span style="color:#ff6655;">●</span> 正常矢量 (红)
+          </div>
+          <div style="margin-top:8px;">
+            <b style="font-size:12px;">3D 视图</b>
+            <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;">
+              <button class="view-btn" data-view="iso">等轴测</button>
+              <button class="view-btn" data-view="xy">XY 平面</button>
+              <button class="view-btn" data-view="xz">ZX 平面</button>
+              <button class="view-btn" data-view="yz">YZ 平面</button>
+              <button class="view-btn" data-view="front">前面(Z)</button>
+              <button class="view-btn" data-view="top">俯视</button>
+            </div>
+            <div style="font-size:11px;color:#6c7086;margin-top:4px;">
+              左键平移 · Shift/右键拖动旋转 · 滚轮缩放
+            </div>
+          </div>
+          <button id="btn-reset-view">重置视图</button>
+        </section>
+      </div>
+    </aside>
+    <main id="main">
+      <canvas id="canvas"></canvas>
+    </main>
+    <aside id="code-panel">
+      <div id="code-header">
+        <span class="panel-title">📄 程序文件</span>
+        <span id="code-filename" title="点击某行可在图像中高亮对应段">-</span>
+      </div>
+      <div id="code-content"><div class="code-empty">选择 NC 文件后显示程序内容</div></div>
+    </aside>
+  </div>
+  <footer id="stepper">
+    <button class="step-btn" data-action="first">⏮</button>
+    <button class="step-btn" data-action="prev">◀</button>
+    <button class="step-btn" data-action="play">▶</button>
+    <button class="step-btn" data-action="pause">⏸</button>
+    <button class="step-btn" data-action="stop">⏹</button>
+    <button class="step-btn" data-action="next">▶⏩</button>
+    <span id="step-indicator">段 0 / 0</span>
+  </footer>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
