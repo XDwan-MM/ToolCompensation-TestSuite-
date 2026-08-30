@@ -76,6 +76,7 @@ int main(int argc, char *argv[])
         qDebug() << "       suv:        起刀类型高位(No.5003#1) 0/1，默认 0";
         qDebug() << "       ccc:        外边拐角连接(No.19607#2) 0=直线 1=圆弧，默认 0";
         qDebug() << "       la:         预读段数 2~8，默认 8";
+        qDebug() << "       geomCheck:  不相邻等距线几何相交检查 0=off 1=on，默认 0";
         return 1;
     }
 
@@ -89,6 +90,7 @@ int main(int argc, char *argv[])
     int     cccVal  = (argc >= 9) ? atoi(argv[8]) : 0;
     int     lookAheadSegments  = (argc >= 10) ? atoi(argv[9]) : 8;
     QString outFile = (argc >= 11) ? argv[10] : "pmc_output.json";
+    bool geomCheck = (argc >= 12) ? (atoi(argv[11]) != 0) : false;
 
     NCInterpreter_p interpreter;
     ItpParam param;
@@ -99,6 +101,7 @@ int main(int argc, char *argv[])
     param.sup = (supVal != 0);
     param.suv = (suvVal != 0);
     param.ccc = (cccVal != 0);
+    param.geomCheck = geomCheck;
     if (lookAheadSegments >= 2 && lookAheadSegments <= 8)
         param.lookAheadSegments = lookAheadSegments;
     interpreter.setItpParam(param);

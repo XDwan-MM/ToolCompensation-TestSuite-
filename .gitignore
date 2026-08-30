@@ -1,32 +1,22 @@
-# 构建产物
+# 编译产物
 build/
 Makefile
 .qmake.stash
 bench_comp
 *.o
-*.a
 
-# Python 产物
-__pycache__/
-*.pyc
-
-# node 工具依赖
-toolpath-sim/node_modules/
-toolpath-sim/uploads/
-
-# 运行输出（译码器 JSON / 调试产物）
+# 测试输出
+结果/
+uploads/
 pmc_output.json
+pmc_trajectory.png
 compare_report.json
-*.log
-*_c*.json
-*_D*.json
-改.nc
-0
-1
-12
-30
--
 
-# 其他
-*.swp
-.DS_Store
+# Node
+node_modules/
+
+# Python
+__pycache__/
+
+# 打包/临时
+*.7z

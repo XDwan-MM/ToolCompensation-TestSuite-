@@ -50,7 +50,7 @@ app.get('/api/ncfiles/:name/content', (req, res) => {
 
 // POST /api/calculate — run C++ binary
 app.post('/api/calculate', (req, res) => {
-  const { file, D, cnv, cav, naa, entrySUP, entrySUV, cornerCCC, lookAheadSegments } = req.body;
+  const { file, D, cnv, cav, naa, entrySUP, entrySUV, cornerCCC, lookAheadSegments, geomCheck } = req.body;
   if (!file) return res.status(400).json({ error: 'file is required' });
   const safeFile = path.basename(file);
   const ncPath = path.join(NC_DIR, safeFile);
@@ -63,9 +63,10 @@ app.post('/api/calculate', (req, res) => {
   const suvVal = typeof entrySUV === 'number' ? entrySUV : 0;
   const cccVal = typeof cornerCCC === 'number' ? cornerCCC : 0;
   const laVal  = typeof lookAheadSegments === 'number' ? lookAheadSegments : 8;
+  const geomVal = typeof geomCheck === 'number' ? geomCheck : 0;   // 不相邻等距线几何相交检查
   const tmpOut = path.join(UPLOAD_DIR, `out_${crypto.randomUUID()}.json`);
   try {
-    execFileSync(BINARY, [ncPath, String(dVal), String(cnvVal), String(cavVal), String(naaVal), String(supVal), String(suvVal), String(cccVal), String(laVal), tmpOut], { timeout: 10000, stdio: 'ignore' });
+    execFileSync(BINARY, [ncPath, String(dVal), String(cnvVal), String(cavVal), String(naaVal), String(supVal), String(suvVal), String(cccVal), String(laVal), tmpOut, String(geomVal)], { timeout: 10000, stdio: 'ignore' });
     const data = JSON.parse(fs.readFileSync(tmpOut, 'utf-8'));
     res.json(data);
   } catch (err) {

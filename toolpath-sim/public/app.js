@@ -234,7 +234,7 @@ class PathRenderer {
       activeRawIdxs.add(this.toolPath[this.currentStep].rawIdx);
     for (const i of this.highlightRawIdxs) activeRawIdxs.add(i);
     if (this.options.showRaw) this._drawPathSegments(this.segments, '#2196F3', 2.5, [], activeRawIdxs);
-    if (this.options.showCmp) this._drawCmpSegments('#F44336', 2.5, [6, 4]);
+    if (this.options.showCmp) this._drawCmpSegments('#F44336', 2.5, []);   // 路径实线, 虚线只用于矢量箭头
 
     if (this.options.showLabels) this._drawLabels();
     if (this.options.showTool && this.toolPos) this._drawTool(this.toolPos.x, this.toolPos.y, this.toolPos.z);
@@ -748,6 +748,7 @@ class App {
     this.currentSUV = 0;
     this.currentCCC = 0;
     this.currentLA = 8;
+    this.currentGeomCheck = 0;
     this.lineToStep = null;    // Map: NC 行号 → toolPath 索引范围 [first, last]
     this._codeLineEls = [];    // 右侧代码面板行 DOM
     this._setupSidebar();
@@ -837,6 +838,12 @@ class App {
     // lookAheadSegments select
     document.getElementById('la-select').addEventListener('change', (e) => {
       this.currentLA = parseInt(e.target.value);
+      if (this.currentFile) this.calculate();
+    });
+
+    // geomCheck checkbox (不相邻等距线几何相交检查)
+    document.getElementById('geomcheck-check').addEventListener('change', (e) => {
+      this.currentGeomCheck = e.target.checked ? 1 : 0;
       if (this.currentFile) this.calculate();
     });
 
@@ -1030,7 +1037,7 @@ class App {
       const res = await fetch('/api/calculate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ file: this.currentFile, D: this.currentD, cnv: this.currentCNV, cav: this.currentCAV, naa: this.currentNAA, entrySUP: this.currentSUP, entrySUV: this.currentSUV, cornerCCC: this.currentCCC, lookAheadSegments: this.currentLA })
+        body: JSON.stringify({ file: this.currentFile, D: this.currentD, cnv: this.currentCNV, cav: this.currentCAV, naa: this.currentNAA, entrySUP: this.currentSUP, entrySUV: this.currentSUV, cornerCCC: this.currentCCC, lookAheadSegments: this.currentLA, geomCheck: this.currentGeomCheck })
       });
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
