@@ -436,7 +436,6 @@ class PathRenderer {
         if (len > 4) {
           const ux = dx / len, uy = dy / len;
           const ah = 6;
-          ctx.setLineDash([]);
           ctx.fillStyle = ctx.strokeStyle;
           ctx.beginPath();
           ctx.moveTo(to.x, to.y);
@@ -445,6 +444,10 @@ class PathRenderer {
           ctx.closePath();
           ctx.fill();
         }
+        // 必须无条件恢复实线：setLineDash 是 canvas 全局状态，若箭头短(<=4)或
+        // 零长段(CDON 坍缩段 RAW==CMP, len=0)未恢复，下一条 CMP 线段会被虚线画
+        //（TC-021改 D=-11 CDON=1: L11/L12 零长段后 L13 长线变红色虚线）。
+        ctx.setLineDash([]);
       }
     }
     ctx.setLineDash([]);
