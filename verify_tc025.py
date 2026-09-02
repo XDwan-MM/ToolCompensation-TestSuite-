@@ -8,7 +8,7 @@ L10_R = 10.0                 # L10 弧半径
 CUT_TOL = 0.1                # 工具边沿距弧心允许的容差
 
 def run(D):
-    subprocess.run(['./build/run_pmc_test', NC, str(D), '0', '1', '1', '0', '0', '0', '8', '/tmp/s.json'],
+    subprocess.run(['./build/run_pmc_test', NC, str(D), '0', '1', '1', '0', '0', '0', '8', '0', '/tmp/s.json'],
                    capture_output=True)
     return json.load(open('/tmp/s.json'))
 

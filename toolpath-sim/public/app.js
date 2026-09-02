@@ -566,7 +566,8 @@ class PathRenderer {
   _drawTool(x, y, z) {
     const ctx = this.ctx;
     const sp = this.project(x, y, z);
-    const r = (this.toolRadius || window.app?.currentD || 6) * this.camera.scale;
+    // D 可为负(右补偿), 刀具半径取 |D|, 否则负半径被下方 Math.max 钳成 6px 极小圆
+    const r = Math.abs(this.toolRadius || window.app?.currentD || 6) * this.camera.scale;
     ctx.strokeStyle = '#a6e3a1';
     ctx.lineWidth = 2;
     ctx.beginPath(); ctx.arc(sp.x, sp.y, Math.max(r, 6), 0, Math.PI * 2); ctx.stroke();

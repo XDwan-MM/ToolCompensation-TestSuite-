@@ -66,7 +66,7 @@ app.post('/api/calculate', (req, res) => {
   const geomVal = typeof geomCheck === 'number' ? geomCheck : 0;   // 不相邻等距线几何相交检查
   const tmpOut = path.join(UPLOAD_DIR, `out_${crypto.randomUUID()}.json`);
   try {
-    execFileSync(BINARY, [ncPath, String(dVal), String(cnvVal), String(cavVal), String(naaVal), String(supVal), String(suvVal), String(cccVal), String(laVal), tmpOut, String(geomVal)], { timeout: 10000, stdio: 'ignore' });
+    execFileSync(BINARY, [ncPath, String(dVal), String(cnvVal), String(cavVal), String(naaVal), String(supVal), String(suvVal), String(cccVal), String(laVal), String(geomVal), tmpOut], { timeout: 10000, stdio: 'ignore' });
     const data = JSON.parse(fs.readFileSync(tmpOut, 'utf-8'));
     res.json(data);
   } catch (err) {

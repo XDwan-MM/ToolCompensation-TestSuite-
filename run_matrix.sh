@@ -163,7 +163,7 @@ START_TIME=$(date +%s)
 
 run_one() {
     local nc_file="$1" cnv="$2" cav="$3" naa="$4" sup="$5" suv="$6" ccc="$7" D="$8" out_json="$9"
-    if "$BIN" "$NC_DIR/$nc_file" "$D" "$cnv" "$cav" "$naa" "$sup" "$suv" "$ccc" 8 "$out_json" > /dev/null 2>&1; then
+    if "$BIN" "$NC_DIR/$nc_file" "$D" "$cnv" "$cav" "$naa" "$sup" "$suv" "$ccc" 8 0 "$out_json" > /dev/null 2>&1; then
         echo "OK    ${cnv}_${cav}_${naa}_${sup}_${suv}_${ccc}  $nc_file  D=$D"
     else
         echo "FAIL  ${cnv}_${cav}_${naa}_${sup}_${suv}_${ccc}  $nc_file  D=$D"

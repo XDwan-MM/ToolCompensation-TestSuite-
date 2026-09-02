@@ -67,7 +67,7 @@ static void addPoint(QJsonArray &arr, const pmc_data &p, const QString &tag, int
 int main(int argc, char *argv[])
 {
     if (argc < 2) {
-        qDebug() << "用法: run_pmc_test <nc_file> [D] [cnv] [cav] [naa] [sup] [suv] [ccc] [la] [output.json]";
+        qDebug() << "用法: run_pmc_test <nc_file> [D] [cnv] [cav] [naa] [sup] [suv] [ccc] [la] [geomCheck] [output.json]";
         qDebug() << "       D:          刀补半径，默认 6.0";
         qDebug() << "       cnv:        干涉检查模式 0=FullCheck 1=ArcOnly 2=Disabled，默认 0";
         qDebug() << "       cav:        干涉检查动作 0=Alarm 1=Avoid，默认 0";
@@ -77,6 +77,7 @@ int main(int argc, char *argv[])
         qDebug() << "       ccc:        外边拐角连接(No.19607#2) 0=直线 1=圆弧，默认 0";
         qDebug() << "       la:         预读段数 2~8，默认 8";
         qDebug() << "       geomCheck:  不相邻等距线几何相交检查 0=off 1=on，默认 0";
+        qDebug() << "       output.json: 输出文件，默认 pmc_output.json（最后一个参数）";
         return 1;
     }
 
@@ -89,8 +90,8 @@ int main(int argc, char *argv[])
     int     suvVal  = (argc >= 8) ? atoi(argv[7]) : 0;
     int     cccVal  = (argc >= 9) ? atoi(argv[8]) : 0;
     int     lookAheadSegments  = (argc >= 10) ? atoi(argv[9]) : 8;
-    QString outFile = (argc >= 11) ? argv[10] : "pmc_output.json";
-    bool geomCheck = (argc >= 12) ? (atoi(argv[11]) != 0) : false;
+    bool geomCheck = (argc >= 11) ? (atoi(argv[10]) != 0) : false;
+    QString outFile = (argc >= 12) ? argv[11] : "pmc_output.json";
 
     NCInterpreter_p interpreter;
     ItpParam param;
@@ -139,8 +140,11 @@ int main(int argc, char *argv[])
                 const double ry = series.pmc.position.y;
                 const double rz = series.pmc.position.z;
                 const int pc = planeCode(series.pmc.plane);
+                qDebug() << "[CMPOUT] line" << lineNum << "actCnt" << series.actionGroup.size() << "pmcInterp" << (int)series.pmc.interp;
                 for (const auto &action : series.actionGroup)
                 {
+                    qDebug() << "[CMPACT] line" << lineNum << "aint" << (int)action.interp << "corner" << action.isCornerArc
+                             << "off" << action.offsetVector.x() << action.offsetVector.y();
                     // 补偿后物理坐标 = 编程点物理坐标 + 几何偏移写回物理轴
                     pmc_pos compPos = series.pmc.position;
                     pm.xyToPos(action.offsetVector, compPos);
